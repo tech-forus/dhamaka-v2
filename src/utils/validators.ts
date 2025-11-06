@@ -4,7 +4,6 @@
  */
 
 import { z } from 'zod';
-import { validate as isEmailValid } from 'isemail';
 
 // =============================================================================
 // PRIMITIVE VALIDATORS (can be used standalone)
@@ -22,11 +21,11 @@ export const validatePhone = (phone: string): string => {
 };
 
 /**
- * Validate email address using isemail library
+ * Validate email address
  */
 export const validateEmail = (email: string): string => {
   if (!email) return 'Email is required';
-  if (!isEmailValid(email)) return 'Enter a valid email address';
+  if (!/.+@.+\..+/.test(email)) return 'Please add "@" or domain (eg. com)';
   return '';
 };
 
