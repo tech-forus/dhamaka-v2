@@ -20,6 +20,14 @@ export interface VendorBasics {
   vendorEmailAddress: string;
   gstin?: string;
   transportMode: 'road' | 'air' | 'rail' | 'ship';
+  legalCompanyName: string;
+  displayName: string;
+  subVendor: string;
+  vendorCode: string;
+  primaryContactName: string;
+  primaryContactPhone: string;
+  primaryContactEmail: string;
+  address: string;
 }
 
 /**

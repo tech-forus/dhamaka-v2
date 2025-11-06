@@ -10,6 +10,14 @@ import {
   validatePhone,
   validateEmail,
   validateGST,
+  validateLegalCompanyName,
+  validateDisplayName,
+  validateSubVendor,
+  validateVendorCode,
+  validatePrimaryContactName,
+  validatePrimaryContactPhone,
+  validatePrimaryContactEmail,
+  validateAddress,
 } from '../utils/validators';
 import { VendorBasics, persistDraft } from '../store/draftStore';
 import { emitDebug } from '../utils/debug';
@@ -24,6 +32,14 @@ export interface VendorBasicsErrors {
   vendorPhoneNumber?: string;
   vendorEmailAddress?: string;
   gstin?: string;
+  legalCompanyName?: string;
+  displayName?: string;
+  subVendor?: string;
+  vendorCode?: string;
+  primaryContactName?: string;
+  primaryContactPhone?: string;
+  primaryContactEmail?: string;
+  address?: string;
 }
 
 export interface UseVendorBasicsReturn {
@@ -47,6 +63,14 @@ const defaultBasics: VendorBasics = {
   vendorEmailAddress: '',
   gstin: '',
   transportMode: 'road',
+  legalCompanyName: '',
+  displayName: '',
+  subVendor: '',
+  vendorCode: '',
+  primaryContactName: '',
+  primaryContactPhone: '',
+  primaryContactEmail: '',
+  address: '',
 };
 
 // =============================================================================
@@ -126,18 +150,38 @@ export const useVendorBasics = (
         case 'gstin':
           error = validateGST(basics.gstin || '');
           break;
+        case 'legalCompanyName':
+          error = validateLegalCompanyName(basics.legalCompanyName);
+          break;
+        case 'displayName':
+          error = validateDisplayName(basics.displayName);
+          break;
+        case 'subVendor':
+          error = validateSubVendor(basics.subVendor);
+          break;
+        case 'vendorCode':
+          error = validateVendorCode(basics.vendorCode);
+          break;
+        case 'primaryContactName':
+          error = validatePrimaryContactName(basics.primaryContactName);
+          break;
+        case 'primaryContactPhone':
+          error = validatePrimaryContactPhone(basics.primaryContactPhone);
+          break;
+        case 'primaryContactEmail':
+          error = validatePrimaryContactEmail(basics.primaryContactEmail);
+          break;
+        case 'address':
+          error = validateAddress(basics.address);
+          break;
       }
 
       if (error) {
-        setErrors((prev) => ({
-          ...prev,
-          [field]: error,
-        }));
+        setErrors((prev) => ({ ...prev, [field]: error }));
         emitDebug('BASICS_VALIDATION_ERROR', { field, error });
         return false;
       }
 
-      // Clear error if valid
       setErrors((prev) => {
         const updated = { ...prev };
         delete updated[field as keyof VendorBasicsErrors];
@@ -158,9 +202,17 @@ export const useVendorBasics = (
       'contactPersonName',
       'vendorPhoneNumber',
       'vendorEmailAddress',
+      'legalCompanyName',
+      'displayName',
+      'subVendor',
+      'vendorCode',
+      'primaryContactName',
+      'primaryContactPhone',
+      'primaryContactEmail',
+      'address',
     ];
 
-    // Also validate GSTIN if present
+    // Validate GSTIN if present
     if (basics.gstin) {
       fields.push('gstin');
     }
@@ -186,6 +238,30 @@ export const useVendorBasics = (
           break;
         case 'gstin':
           error = validateGST(basics.gstin || '');
+          break;
+        case 'legalCompanyName':
+          error = validateLegalCompanyName(basics.legalCompanyName);
+          break;
+        case 'displayName':
+          error = validateDisplayName(basics.displayName);
+          break;
+        case 'subVendor':
+          error = validateSubVendor(basics.subVendor);
+          break;
+        case 'vendorCode':
+          error = validateVendorCode(basics.vendorCode);
+          break;
+        case 'primaryContactName':
+          error = validatePrimaryContactName(basics.primaryContactName);
+          break;
+        case 'primaryContactPhone':
+          error = validatePrimaryContactPhone(basics.primaryContactPhone);
+          break;
+        case 'primaryContactEmail':
+          error = validatePrimaryContactEmail(basics.primaryContactEmail);
+          break;
+        case 'address':
+          error = validateAddress(basics.address);
           break;
       }
 

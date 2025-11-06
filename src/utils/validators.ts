@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { validate as isEmailValid } from 'isemail';
 
 // =============================================================================
 // PRIMITIVE VALIDATORS (can be used standalone)
@@ -11,47 +12,75 @@ import { z } from 'zod';
 
 /**
  * Validate phone number (India format)
- * Must be exactly 10 digits
- *
- * @param phone - Phone number string
- * @returns Error message or empty string if valid
+ * Must be exactly 10 digits, cannot start with 0
  */
 export const validatePhone = (phone: string): string => {
   if (!phone) return 'Phone number is required';
   if (!/^\d{10}$/.test(phone)) return 'Phone must be exactly 10 digits';
+  if (phone.startsWith('0')) return 'Cannot start with zero';
   return '';
 };
 
 /**
- * Validate email address
- * Basic RFC-ish pattern
- *
- * @param email - Email address string
- * @returns Error message or empty string if valid
+ * Validate email address using isemail library
  */
 export const validateEmail = (email: string): string => {
   if (!email) return 'Email is required';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Invalid email format';
+  if (!isEmailValid(email)) return 'Invalid email format';
   return '';
 };
 
 /**
- * Validate GST number
- * Must be exactly 15 characters with valid pattern
- *
- * @param gst - GST number string
- * @returns Error message or empty string if valid
+ * Validate GST number with state code and segment checks
  */
 export const validateGST = (gst: string): string => {
-  if (!gst) return ''; // GST is optional
+  if (!gst) return ''; // Optional field
 
-  if (gst.length !== 15) {
+  // Convert to uppercase for validation
+  const gstUpper = gst.toUpperCase();
+
+  if (gstUpper.length !== 15) {
     return 'GST must be exactly 15 characters';
   }
 
-  const pattern = /^[0-3][0-9][A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
-  if (!pattern.test(gst)) {
-    return 'Invalid GST format';
+  // Character set check: A-Z and 0-9 only
+  if (!/^[A-Z0-9]+$/.test(gstUpper)) {
+    return 'GST can only contain letters and numbers';
+  }
+
+  // Segment 1: State Code (positions 0-1)
+  const stateCode = gstUpper.substring(0, 2);
+  const validStateCodes = [
+    '01', '02', '03', '04', '05', '06', '07', '08', '09', '10',
+    '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
+    '21', '22', '23', '24', '25', '26', '27', '28', '29', '30',
+    '31', '32', '33', '34', '35', '36', '37', '38'
+  ];
+  if (!validStateCodes.includes(stateCode)) {
+    return 'Invalid state code in GST';
+  }
+
+  // Segment 2: PAN format (positions 2-11) - AAAAA9999X
+  const pan = gstUpper.substring(2, 12);
+  if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) {
+    return 'Invalid PAN format in GST';
+  }
+
+  // Segment 3: Entity code (position 12) - must be alphanumeric
+  const entityCode = gstUpper.charAt(12);
+  if (!/^[1-9A-Z]$/.test(entityCode)) {
+    return 'Invalid entity code in GST';
+  }
+
+  // Segment 4: Position 13 must be 'Z'
+  if (gstUpper.charAt(13) !== 'Z') {
+    return 'Position 14 must be Z';
+  }
+
+  // Segment 5: Checksum (position 14) - must be alphanumeric
+  const checksum = gstUpper.charAt(14);
+  if (!/^[0-9A-Z]$/.test(checksum)) {
+    return 'Invalid checksum in GST';
   }
 
   return '';
@@ -86,34 +115,109 @@ export const validateFuel = (fuel: string | number): string => {
 
 /**
  * Validate company name
- * 2-120 characters, letters, digits, space, . & - _
- *
- * @param name - Company name
- * @returns Error message or empty string if valid
+ * Max 30 characters, all characters allowed
  */
 export const validateCompanyName = (name: string): string => {
   if (!name) return 'Company name is required';
-  if (name.length < 2 || name.length > 120) {
-    return 'Company name must be 2-120 characters';
-  }
-  if (!/^[a-zA-Z0-9\s.,&\-_]+$/.test(name)) {
-    return 'Company name can only contain letters, numbers, space, . & - _';
-  }
+  if (name.length < 2) return 'Company name must be at least 2 characters';
+  if (name.length > 30) return 'Company name must be at most 30 characters';
   return '';
 };
 
 /**
  * Validate contact person name
- * 2-80 characters
- *
- * @param name - Contact person name
- * @returns Error message or empty string if valid
+ * Alphabets only (+ space, hyphen, apostrophe), max 30 characters
  */
 export const validateContactName = (name: string): string => {
   if (!name) return 'Contact person name is required';
-  if (name.length < 2 || name.length > 80) {
-    return 'Contact name must be 2-80 characters';
+  if (name.length < 2) return 'Contact name must be at least 2 characters';
+  if (name.length > 30) return 'Contact name must be at most 30 characters';
+  if (!/^[a-zA-Z\s\-']+$/.test(name)) {
+    return 'Contact name can only contain letters, spaces, hyphens, and apostrophes';
   }
+  return '';
+};
+
+/**
+ * Validate legal company name
+ * Max 60 characters, all characters allowed
+ */
+export const validateLegalCompanyName = (name: string): string => {
+  if (!name) return 'Legal company name is required';
+  if (name.length > 60) return 'Legal company name must be at most 60 characters';
+  return '';
+};
+
+/**
+ * Validate display name
+ * Max 30 characters, all characters allowed
+ */
+export const validateDisplayName = (name: string): string => {
+  if (!name) return 'Display name is required';
+  if (name.length > 30) return 'Display name must be at most 30 characters';
+  return '';
+};
+
+/**
+ * Validate sub vendor
+ * Max 20 characters, all characters allowed
+ */
+export const validateSubVendor = (name: string): string => {
+  if (!name) return 'Sub vendor is required';
+  if (name.length > 20) return 'Sub vendor must be at most 20 characters';
+  return '';
+};
+
+/**
+ * Validate vendor code
+ * Alphanumeric only, auto-uppercase, max 20 characters
+ */
+export const validateVendorCode = (code: string): string => {
+  if (!code) return 'Vendor code is required';
+  if (code.length > 20) return 'Vendor code must be at most 20 characters';
+  if (!/^[A-Z0-9]+$/.test(code.toUpperCase())) {
+    return 'Vendor code can only contain letters and numbers';
+  }
+  return '';
+};
+
+/**
+ * Validate primary contact name
+ * Alphabets only (+ space, hyphen, apostrophe), max 25 characters
+ */
+export const validatePrimaryContactName = (name: string): string => {
+  if (!name) return 'Primary contact name is required';
+  if (name.length < 2) return 'Primary contact name must be at least 2 characters';
+  if (name.length > 25) return 'Primary contact name must be at most 25 characters';
+  if (!/^[a-zA-Z\s\-']+$/.test(name)) {
+    return 'Primary contact name can only contain letters, spaces, hyphens, and apostrophes';
+  }
+  return '';
+};
+
+/**
+ * Validate primary contact phone
+ * Same as validatePhone - 10 digits, cannot start with 0
+ */
+export const validatePrimaryContactPhone = (phone: string): string => {
+  return validatePhone(phone);
+};
+
+/**
+ * Validate primary contact email
+ * Same as validateEmail - uses isemail
+ */
+export const validatePrimaryContactEmail = (email: string): string => {
+  return validateEmail(email);
+};
+
+/**
+ * Validate address
+ * Max 150 characters, all characters allowed
+ */
+export const validateAddress = (address: string): string => {
+  if (!address) return 'Address is required';
+  if (address.length > 150) return 'Address must be at most 150 characters';
   return '';
 };
 
