@@ -131,6 +131,7 @@ export const CompanySection: React.FC<CompanySectionProps> = ({
               setField('vendorPhoneNumber', value);
             }}
             onBlur={() => validateField('vendorPhoneNumber')}
+            inputMode="numeric"
             maxLength={10}
             className={`mt-1 block w-full border rounded-lg shadow-sm px-3 py-2 text-sm text-slate-800 placeholder-slate-400
                        focus:outline-none focus:ring-1 focus:border-blue-500 transition bg-slate-50/70
@@ -401,6 +402,7 @@ export const CompanySection: React.FC<CompanySectionProps> = ({
               setField('primaryContactPhone', value);
             }}
             onBlur={() => validateField('primaryContactPhone')}
+            inputMode="numeric"
             maxLength={10}
             className={`mt-1 block w-full border rounded-lg shadow-sm px-3 py-2 text-sm text-slate-800 placeholder-slate-400
                        focus:outline-none focus:ring-1 focus:border-blue-500 transition bg-slate-50/70

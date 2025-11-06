@@ -4,7 +4,6 @@
  */
 
 import { z } from 'zod';
-import { validate as isEmailValid } from 'isemail';
 
 // =============================================================================
 // PRIMITIVE VALIDATORS (can be used standalone)
@@ -16,17 +15,17 @@ import { validate as isEmailValid } from 'isemail';
  */
 export const validatePhone = (phone: string): string => {
   if (!phone) return 'Phone number is required';
-  if (!/^\d{10}$/.test(phone)) return 'Phone must be exactly 10 digits';
   if (phone.startsWith('0')) return 'Cannot start with zero';
+  if (!/^[1-9][0-9]{9}$/.test(phone)) return 'Enter a valid 10-digit phone number';
   return '';
 };
 
 /**
- * Validate email address using isemail library
+ * Validate email address
  */
 export const validateEmail = (email: string): string => {
   if (!email) return 'Email is required';
-  if (!isEmailValid(email)) return 'Invalid email format';
+  if (!/.+@.+\..+/.test(email)) return 'Please add "@" or domain (eg. com)';
   return '';
 };
 
