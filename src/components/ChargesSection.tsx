@@ -40,7 +40,7 @@ const ChargeField: React.FC<ChargeFieldProps> = ({
   onChange,
   error,
   tooltip,
-  max = 999999,
+  max = CHARGE_MAX,
   suffix = '₹',
   isDropdown = false,
   dropdownOptions,

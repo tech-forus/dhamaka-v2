@@ -399,4 +399,4 @@ export const FUEL_SURCHARGE_OPTIONS = [
   0, 5, 10, 15, 20, 25, 30, 35, 40,
 ] as const;
 
-export const CHARGE_MAX = 999999;
+export const CHARGE_MAX = 10000;
