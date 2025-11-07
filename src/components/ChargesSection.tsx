@@ -6,7 +6,7 @@
 import React from 'react';
 import { UseChargesReturn } from '../hooks/useCharges';
 import { CurrencyDollarIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
-import { FUEL_SURCHARGE_OPTIONS } from '../utils/validators';
+import { FUEL_SURCHARGE_OPTIONS, CHARGE_MAX } from '../utils/validators';
 
 // =============================================================================
 // PROPS
@@ -53,7 +53,7 @@ const ChargeField: React.FC<ChargeFieldProps> = ({
     }
     const num = parseFloat(val);
     if (!isNaN(num)) {
-      onChange(num);
+      onChange(Math.min(num, max));
     }
   };
 
@@ -154,6 +154,7 @@ export const ChargesSection: React.FC<ChargesSectionProps> = ({ charges }) => {
           error={errors.docketCharges}
           tooltip="Per-shipment docket processing charge"
           suffix="₹"
+          max={CHARGE_MAX}
         />
 
         {/* Min Weight */}
@@ -165,6 +166,7 @@ export const ChargesSection: React.FC<ChargesSectionProps> = ({ charges }) => {
           error={errors.minWeightKg}
           tooltip="Minimum weight (in KG) for charge calculation"
           suffix="KG"
+          max={CHARGE_MAX}
         />
 
         {/* Min Charges */}
@@ -176,6 +178,7 @@ export const ChargesSection: React.FC<ChargesSectionProps> = ({ charges }) => {
           error={errors.minCharges}
           tooltip="Minimum charge amount per shipment"
           suffix="₹"
+          max={CHARGE_MAX}
         />
 
         {/* Hamali Charges */}
@@ -187,6 +190,7 @@ export const ChargesSection: React.FC<ChargesSectionProps> = ({ charges }) => {
           error={errors.hamaliCharges}
           tooltip="Loading/unloading labor charges"
           suffix="₹"
+          max={CHARGE_MAX}
         />
 
         {/* Handling Charges */}
@@ -253,6 +257,7 @@ export const ChargesSection: React.FC<ChargesSectionProps> = ({ charges }) => {
           error={errors.greenTax}
           tooltip="Environmental / National Green Tribunal tax"
           suffix="₹"
+          max={CHARGE_MAX}
         />
 
         {/* Misc Charges */}
@@ -264,6 +269,7 @@ export const ChargesSection: React.FC<ChargesSectionProps> = ({ charges }) => {
           error={errors.miscCharges}
           tooltip="Miscellaneous or All Other Charges"
           suffix="₹"
+          max={CHARGE_MAX}
         />
 
         {/* Fuel Surcharge */}
