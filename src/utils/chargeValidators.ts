@@ -35,7 +35,7 @@ export interface ChargeCardData {
   mode: Mode;
   fixedAmount: number;
   variableRange: VariableRange;
-  weightThreshold: number;
+  weightThreshold?: number; // Optional - only used in handlingCharges
 }
 
 // =============================================================================
@@ -99,8 +99,10 @@ export const validateUnit = (value: string): string => {
 
 /**
  * Validate complete charge card data
+ * @param data - Charge card data
+ * @param validateWeight - Whether to validate weight threshold (only for handlingCharges)
  */
-export const validateChargeCard = (data: ChargeCardData): Record<string, string> => {
+export const validateChargeCard = (data: ChargeCardData, validateWeight: boolean = false): Record<string, string> => {
   const errors: Record<string, string> = {};
 
   // Validate unit
@@ -122,9 +124,11 @@ export const validateChargeCard = (data: ChargeCardData): Record<string, string>
     if (variableError) errors.variableRange = variableError;
   }
 
-  // Validate weight threshold
-  const weightError = validateWeightThreshold(data.weightThreshold);
-  if (weightError) errors.weightThreshold = weightError;
+  // Validate weight threshold (only if validateWeight is true, i.e., for handlingCharges)
+  if (validateWeight && data.weightThreshold !== undefined) {
+    const weightError = validateWeightThreshold(data.weightThreshold);
+    if (weightError) errors.weightThreshold = weightError;
+  }
 
   return errors;
 };

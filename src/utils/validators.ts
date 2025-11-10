@@ -231,7 +231,7 @@ const ChargeCardSchema = z.object({
   mode: z.enum(['FIXED', 'VARIABLE']),
   fixedAmount: z.number().min(1).max(5000).optional(),
   variableRange: z.enum(['0%', '0.1% - 1%', '1.25% - 2.5%', '3% - 4%', '4% - 5%']).optional(),
-  weightThreshold: z.number().min(1).max(20000),
+  weightThreshold: z.number().min(1).max(20000).optional(), // Only required for handlingCharges
 });
 
 // Charges schema (mixed: simple numbers + card structures)

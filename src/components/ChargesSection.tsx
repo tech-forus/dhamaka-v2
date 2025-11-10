@@ -54,7 +54,7 @@ const SimpleChargeField: React.FC<SimpleChargeFieldProps> = ({
     }
     const num = parseFloat(val);
     if (!isNaN(num)) {
-      onChange(Math.min(num, max));
+      onChange(num);
     }
   };
 

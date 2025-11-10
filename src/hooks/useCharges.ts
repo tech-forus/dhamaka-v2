@@ -63,12 +63,12 @@ export interface UseChargesReturn {
 // =============================================================================
 
 const SIMPLE_CHARGE_RANGES: Record<string, { min: number; max: number }> = {
-  docketCharges: { min: 0, max: 10000 },
-  minWeightKg: { min: 0, max: 10000 },
-  minCharges: { min: 0, max: 10000 },
-  hamaliCharges: { min: 0, max: 10000 },
-  greenTax: { min: 0, max: 10000 },
-  miscCharges: { min: 0, max: 10000 },
+  docketCharges: { min: 1, max: 10000 },
+  minWeightKg: { min: 1, max: 10000 },
+  minCharges: { min: 1, max: 10000 },
+  hamaliCharges: { min: 1, max: 10000 },
+  greenTax: { min: 1, max: 10000 },
+  miscCharges: { min: 1, max: 10000 },
   fuelSurchargePct: { min: 0, max: 40 },
 };
 
@@ -215,7 +215,9 @@ export const useCharges = (
 
       // Check if in range
       if (!isNumberInRange(value, range.min, range.max)) {
-        const error = `Must be between ${range.min} and ${range.max}`;
+        const error = field === 'fuelSurchargePct'
+          ? `Must be between ${range.min} and ${range.max}`
+          : 'Enter amount between 1-10,000';
         setErrors((prev) => ({
           ...prev,
           [field]: error,
@@ -250,7 +252,10 @@ export const useCharges = (
       if (field === 'fixedAmount' && cardData.currency === 'INR' && cardData.mode === 'FIXED') {
         error = validateFixedAmount(cardData.fixedAmount);
       } else if (field === 'weightThreshold') {
-        error = validateWeightThreshold(cardData.weightThreshold);
+        // Only validate weightThreshold for handlingCharges
+        if (cardName === 'handlingCharges' && cardData.weightThreshold !== undefined) {
+          error = validateWeightThreshold(cardData.weightThreshold);
+        }
       }
 
       if (error) {
@@ -302,7 +307,9 @@ export const useCharges = (
       }
 
       if (!isNumberInRange(value, range.min, range.max)) {
-        newErrors[field as keyof ChargesErrors] = `Must be between ${range.min} and ${range.max}`;
+        newErrors[field as keyof ChargesErrors] = field === 'fuelSurchargePct'
+          ? `Must be between ${range.min} and ${range.max}`
+          : 'Enter amount between 1-10,000';
         isValid = false;
       }
     });
@@ -318,7 +325,9 @@ export const useCharges = (
 
     cardNames.forEach((cardName) => {
       const cardData = charges[cardName] as ChargeCardData;
-      const cardErrors = validateChargeCard(cardData);
+      // Only validate weightThreshold for handlingCharges
+      const shouldValidateWeight = cardName === 'handlingCharges';
+      const cardErrors = validateChargeCard(cardData, shouldValidateWeight);
 
       if (Object.keys(cardErrors).length > 0) {
         newErrors[cardName] = cardErrors;
