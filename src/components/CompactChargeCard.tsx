@@ -58,7 +58,6 @@ export const CompactChargeCard: React.FC<CompactChargeCardProps> = ({
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
       {/* Header */}
-      {/* Header with Unit Dropdown */}
       <div className="mb-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -74,19 +73,21 @@ export const CompactChargeCard: React.FC<CompactChargeCardProps> = ({
             )}
           </div>
 
-          {/* Unit Selector */}
-          <select
-            value={data.unit}
-            onChange={(e) => onFieldChange('unit', e.target.value as Unit)}
-            className="text-xs border border-slate-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-            aria-label={`${title} unit`}
-          >
-            {UNIT_OPTIONS.map((unit) => (
-              <option key={unit} value={unit}>
-                {unit}
-              </option>
-            ))}
-          </select>
+          {/* Unit Selector (only for Handling Charges) */}
+          {cardName === 'handlingCharges' && (
+            <select
+              value={data.unit}
+              onChange={(e) => onFieldChange('unit', e.target.value as Unit)}
+              className="text-xs border border-slate-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              aria-label={`${title} unit`}
+            >
+              {UNIT_OPTIONS.map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Fixed Rate Input (directly below Unit, only visible when Fixed ₹ selected) */}
