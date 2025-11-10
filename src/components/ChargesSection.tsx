@@ -1,12 +1,13 @@
 /**
  * ChargesSection component
- * Handles all charge fields with numeric validation
+ * Mixed layout: Simple numeric inputs + Compact charge cards
  */
 
 import React from 'react';
 import { UseChargesReturn } from '../hooks/useCharges';
-import { CurrencyDollarIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
-import { FUEL_SURCHARGE_OPTIONS, CHARGE_MAX } from '../utils/validators';
+import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { FUEL_SURCHARGE_OPTIONS, CHARGE_MAX, ChargeCardData } from '../utils/validators';
+import { CompactChargeCard } from './CompactChargeCard';
 
 // =============================================================================
 // PROPS
@@ -20,26 +21,26 @@ interface ChargesSectionProps {
 // SUB-COMPONENTS
 // =============================================================================
 
-interface ChargeFieldProps {
+interface SimpleChargeFieldProps {
   label: string;
-  name: keyof UseChargesReturn['charges'];
+  name: string;
   value: number;
   onChange: (value: number) => void;
+  onBlur: () => void;
   error?: string;
-  tooltip?: string;
   max?: number;
   suffix?: string;
   isDropdown?: boolean;
-  dropdownOptions?: number[];
+  dropdownOptions?: readonly number[];
 }
 
-const ChargeField: React.FC<ChargeFieldProps> = ({
+const SimpleChargeField: React.FC<SimpleChargeFieldProps> = ({
   label,
   name,
   value,
   onChange,
+  onBlur,
   error,
-  tooltip,
   max = CHARGE_MAX,
   suffix = '₹',
   isDropdown = false,
@@ -61,18 +62,9 @@ const ChargeField: React.FC<ChargeFieldProps> = ({
     <div>
       <label
         htmlFor={name}
-        className="block text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-1"
+        className="block text-xs font-semibold text-slate-600 uppercase tracking-wider"
       >
         {label}
-        {tooltip && (
-          <div className="group relative">
-            <InformationCircleIcon className="w-4 h-4 text-slate-400 cursor-help" />
-            <div className="absolute left-0 bottom-full mb-2 w-64 p-2 bg-slate-800 text-white text-xs rounded shadow-lg
-                            opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 whitespace-normal">
-              {tooltip}
-            </div>
-          </div>
-        )}
       </label>
 
       <div className="relative mt-1">
@@ -82,6 +74,7 @@ const ChargeField: React.FC<ChargeFieldProps> = ({
             name={name}
             value={value}
             onChange={handleChange}
+            onBlur={onBlur}
             className={`block w-full border rounded-lg shadow-sm px-3 py-2 text-sm text-slate-800
                        focus:outline-none focus:ring-1 focus:border-blue-500 transition bg-slate-50/70
                        ${
@@ -104,6 +97,7 @@ const ChargeField: React.FC<ChargeFieldProps> = ({
               name={name}
               value={value}
               onChange={handleChange}
+              onBlur={onBlur}
               min={0}
               max={max}
               step="0.01"
@@ -135,202 +129,164 @@ const ChargeField: React.FC<ChargeFieldProps> = ({
 // =============================================================================
 
 export const ChargesSection: React.FC<ChargesSectionProps> = ({ charges }) => {
-  const { charges: chargeValues, errors, setCharge } = charges;
+  const { charges: chargeValues, errors, setCharge, setCardField, validateField, validateCardField } = charges;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-      <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-        <CurrencyDollarIcon className="w-5 h-5 text-blue-500" />
-        Charges Configuration
-      </h2>
+    <div className="space-y-6">
+      {/* Simple Numeric Charges */}
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <CurrencyDollarIcon className="w-5 h-5 text-blue-500" />
+          Basic Charges
+        </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Docket Charges */}
-        <ChargeField
-          label="Docket Charges"
-          name="docketCharges"
-          value={chargeValues.docketCharges}
-          onChange={(val) => setCharge('docketCharges', val)}
-          error={errors.docketCharges}
-          tooltip="Per-shipment docket processing charge"
-          suffix="₹"
-          max={CHARGE_MAX}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Docket Charges */}
+          <SimpleChargeField
+            label="Docket Charges"
+            name="docketCharges"
+            value={chargeValues.docketCharges}
+            onChange={(val) => setCharge('docketCharges', val)}
+            onBlur={() => validateField('docketCharges')}
+            error={errors.docketCharges}
+            suffix="₹"
+            max={CHARGE_MAX}
+          />
 
-        {/* Min Weight */}
-        <ChargeField
-          label="Min Chargeable Weight"
-          name="minWeightKg"
-          value={chargeValues.minWeightKg}
-          onChange={(val) => setCharge('minWeightKg', val)}
-          error={errors.minWeightKg}
-          tooltip="Minimum weight (in KG) for charge calculation"
-          suffix="KG"
-          max={CHARGE_MAX}
-        />
+          {/* Min Weight */}
+          <SimpleChargeField
+            label="Min Chargeable Weight"
+            name="minWeightKg"
+            value={chargeValues.minWeightKg}
+            onChange={(val) => setCharge('minWeightKg', val)}
+            onBlur={() => validateField('minWeightKg')}
+            error={errors.minWeightKg}
+            suffix="KG"
+            max={CHARGE_MAX}
+          />
 
-        {/* Min Charges */}
-        <ChargeField
-          label="Minimum Charges"
-          name="minCharges"
-          value={chargeValues.minCharges}
-          onChange={(val) => setCharge('minCharges', val)}
-          error={errors.minCharges}
-          tooltip="Minimum charge amount per shipment"
-          suffix="₹"
-          max={CHARGE_MAX}
-        />
+          {/* Min Charges */}
+          <SimpleChargeField
+            label="Minimum Charges"
+            name="minCharges"
+            value={chargeValues.minCharges}
+            onChange={(val) => setCharge('minCharges', val)}
+            onBlur={() => validateField('minCharges')}
+            error={errors.minCharges}
+            suffix="₹"
+            max={CHARGE_MAX}
+          />
 
-        {/* Hamali Charges */}
-        <ChargeField
-          label="Hamali Charges"
-          name="hamaliCharges"
-          value={chargeValues.hamaliCharges}
-          onChange={(val) => setCharge('hamaliCharges', val)}
-          error={errors.hamaliCharges}
-          tooltip="Loading/unloading labor charges"
-          suffix="₹"
-          max={CHARGE_MAX}
-        />
+          {/* Hamali Charges */}
+          <SimpleChargeField
+            label="Hamali Charges"
+            name="hamaliCharges"
+            value={chargeValues.hamaliCharges}
+            onChange={(val) => setCharge('hamaliCharges', val)}
+            onBlur={() => validateField('hamaliCharges')}
+            error={errors.hamaliCharges}
+            suffix="₹"
+            max={CHARGE_MAX}
+          />
 
-        {/* Handling Charges */}
-        <ChargeField
-          label="Handling Charges"
-          name="handlingCharges"
-          value={chargeValues.handlingCharges}
-          onChange={(val) => setCharge('handlingCharges', val)}
-          error={errors.handlingCharges}
-          tooltip="Material handling and processing charges"
-          suffix="₹"
-        />
+          {/* Green Tax */}
+          <SimpleChargeField
+            label="Green Tax / NGT"
+            name="greenTax"
+            value={chargeValues.greenTax}
+            onChange={(val) => setCharge('greenTax', val)}
+            onBlur={() => validateField('greenTax')}
+            error={errors.greenTax}
+            suffix="₹"
+            max={CHARGE_MAX}
+          />
 
-        {/* ROV Charges */}
-        <ChargeField
-          label="ROV Charges"
-          name="rovCharges"
-          value={chargeValues.rovCharges}
-          onChange={(val) => setCharge('rovCharges', val)}
-          error={errors.rovCharges}
-          tooltip="Risk of Value charges for high-value shipments"
-          suffix="₹"
-        />
+          {/* Misc Charges */}
+          <SimpleChargeField
+            label="Misc / AOC Charges"
+            name="miscCharges"
+            value={chargeValues.miscCharges}
+            onChange={(val) => setCharge('miscCharges', val)}
+            onBlur={() => validateField('miscCharges')}
+            error={errors.miscCharges}
+            suffix="₹"
+            max={CHARGE_MAX}
+          />
 
-        {/* COD Charges */}
-        <ChargeField
-          label="COD Charges"
-          name="codCharges"
-          value={chargeValues.codCharges}
-          onChange={(val) => setCharge('codCharges', val)}
-          error={errors.codCharges}
-          tooltip="Cash on Delivery service charges"
-          suffix="₹"
-        />
-
-        {/* To-Pay Charges */}
-        <ChargeField
-          label="To-Pay Charges"
-          name="toPayCharges"
-          value={chargeValues.toPayCharges}
-          onChange={(val) => setCharge('toPayCharges', val)}
-          error={errors.toPayCharges}
-          tooltip="Charges for to-pay shipments"
-          suffix="₹"
-        />
-
-        {/* Appointment Charges */}
-        <ChargeField
-          label="Appointment Charges"
-          name="appointmentCharges"
-          value={chargeValues.appointmentCharges}
-          onChange={(val) => setCharge('appointmentCharges', val)}
-          error={errors.appointmentCharges}
-          tooltip="Scheduled delivery appointment charges"
-          suffix="₹"
-        />
-
-        {/* Green Tax */}
-        <ChargeField
-          label="Green Tax / NGT"
-          name="greenTax"
-          value={chargeValues.greenTax}
-          onChange={(val) => setCharge('greenTax', val)}
-          error={errors.greenTax}
-          tooltip="Environmental / National Green Tribunal tax"
-          suffix="₹"
-          max={CHARGE_MAX}
-        />
-
-        {/* Misc Charges */}
-        <ChargeField
-          label="Misc / AOC Charges"
-          name="miscCharges"
-          value={chargeValues.miscCharges}
-          onChange={(val) => setCharge('miscCharges', val)}
-          error={errors.miscCharges}
-          tooltip="Miscellaneous or All Other Charges"
-          suffix="₹"
-          max={CHARGE_MAX}
-        />
-
-        {/* Fuel Surcharge */}
-        <ChargeField
-          label="Fuel Surcharge"
-          name="fuelSurchargePct"
-          value={chargeValues.fuelSurchargePct}
-          onChange={(val) => setCharge('fuelSurchargePct', val)}
-          error={errors.fuelSurchargePct}
-          tooltip="Fuel surcharge percentage (0-40%)"
-          suffix="%"
-          max={40}
-          isDropdown
-          dropdownOptions={FUEL_SURCHARGE_OPTIONS}
-        />
+          {/* Fuel Surcharge */}
+          <SimpleChargeField
+            label="Fuel Surcharge"
+            name="fuelSurchargePct"
+            value={chargeValues.fuelSurchargePct}
+            onChange={(val) => setCharge('fuelSurchargePct', val)}
+            onBlur={() => validateField('fuelSurchargePct')}
+            error={errors.fuelSurchargePct}
+            suffix="%"
+            max={40}
+            isDropdown
+            dropdownOptions={FUEL_SURCHARGE_OPTIONS}
+          />
+        </div>
       </div>
 
-      {/* Summary */}
-      <div className="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
-        <h3 className="text-sm font-semibold text-slate-700 mb-2">
-          Charges Summary
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          <div>
-            <span className="text-slate-600">Total Base Charges:</span>
-            <span className="block font-semibold text-slate-800">
-              ₹
-              {(
-                chargeValues.docketCharges +
-                chargeValues.minCharges +
-                chargeValues.hamaliCharges +
-                chargeValues.handlingCharges +
-                chargeValues.greenTax +
-                chargeValues.miscCharges
-              ).toFixed(2)}
-            </span>
-          </div>
-          <div>
-            <span className="text-slate-600">Special Charges:</span>
-            <span className="block font-semibold text-slate-800">
-              ₹
-              {(
-                chargeValues.rovCharges +
-                chargeValues.codCharges +
-                chargeValues.toPayCharges +
-                chargeValues.appointmentCharges
-              ).toFixed(2)}
-            </span>
-          </div>
-          <div>
-            <span className="text-slate-600">Fuel Surcharge:</span>
-            <span className="block font-semibold text-slate-800">
-              {chargeValues.fuelSurchargePct}%
-            </span>
-          </div>
-          <div>
-            <span className="text-slate-600">Min Weight:</span>
-            <span className="block font-semibold text-slate-800">
-              {chargeValues.minWeightKg} KG
-            </span>
-          </div>
+      {/* Compact Charge Cards Section */}
+      <div>
+        <h2 className="text-lg font-bold text-slate-800 mb-4">Special Charges</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Handling Charges */}
+          <CompactChargeCard
+            title="Handling"
+            tooltip="Material handling and processing charges"
+            cardName="handlingCharges"
+            data={chargeValues.handlingCharges as ChargeCardData}
+            errors={errors.handlingCharges || {}}
+            onFieldChange={(field, value) => setCardField('handlingCharges', field, value)}
+            onFieldBlur={(field) => validateCardField('handlingCharges', field)}
+          />
+
+          {/* ROV / FOV Charges */}
+          <CompactChargeCard
+            title="ROV / FOV"
+            tooltip="Risk of Value / Freight on Value charges for high-value shipments"
+            cardName="rovCharges"
+            data={chargeValues.rovCharges as ChargeCardData}
+            errors={errors.rovCharges || {}}
+            onFieldChange={(field, value) => setCardField('rovCharges', field, value)}
+            onFieldBlur={(field) => validateCardField('rovCharges', field)}
+          />
+
+          {/* COD / DOD Charges */}
+          <CompactChargeCard
+            title="COD / DOD"
+            tooltip="Cash on Delivery / Delivery on Demand service charges"
+            cardName="codCharges"
+            data={chargeValues.codCharges as ChargeCardData}
+            errors={errors.codCharges || {}}
+            onFieldChange={(field, value) => setCardField('codCharges', field, value)}
+            onFieldBlur={(field) => validateCardField('codCharges', field)}
+          />
+
+          {/* To-Pay Charges */}
+          <CompactChargeCard
+            title="To-Pay"
+            tooltip="Charges for to-pay shipments"
+            cardName="toPayCharges"
+            data={chargeValues.toPayCharges as ChargeCardData}
+            errors={errors.toPayCharges || {}}
+            onFieldChange={(field, value) => setCardField('toPayCharges', field, value)}
+            onFieldBlur={(field) => validateCardField('toPayCharges', field)}
+          />
+
+          {/* Appointment Charges */}
+          <CompactChargeCard
+            title="Appointment"
+            tooltip="Scheduled delivery appointment charges"
+            cardName="appointmentCharges"
+            data={chargeValues.appointmentCharges as ChargeCardData}
+            errors={errors.appointmentCharges || {}}
+            onFieldChange={(field, value) => setCardField('appointmentCharges', field, value)}
+            onFieldBlur={(field) => validateCardField('appointmentCharges', field)}
+          />
         </div>
       </div>
     </div>

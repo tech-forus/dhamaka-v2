@@ -1,10 +1,17 @@
 /**
  * useCharges hook
- * Manages charge fields with numeric coercion and validation
+ * Manages both simple numeric charges and card-based charges with complex validation
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Charges, validateFuel } from '../utils/validators';
+import {
+  ChargeCardData,
+  validateChargeCard,
+  validateFixedAmount,
+  validateWeightThreshold,
+  createDefaultChargeCard,
+} from '../utils/chargeValidators';
 import { toNumberOrZero, isNumberInRange } from '../utils/numbers';
 import { persistDraft } from '../store/draftStore';
 import { emitDebug } from '../utils/debug';
@@ -14,46 +21,54 @@ import { emitDebug } from '../utils/debug';
 // =============================================================================
 
 export interface ChargesErrors {
+  // Simple charges
   docketCharges?: string;
   minWeightKg?: string;
   minCharges?: string;
   hamaliCharges?: string;
-  handlingCharges?: string;
-  rovCharges?: string;
-  codCharges?: string;
-  toPayCharges?: string;
-  appointmentCharges?: string;
   greenTax?: string;
   miscCharges?: string;
   fuelSurchargePct?: string;
+
+  // Card-based charges (nested errors)
+  handlingCharges?: Record<string, string>;
+  rovCharges?: Record<string, string>;
+  codCharges?: Record<string, string>;
+  toPayCharges?: Record<string, string>;
+  appointmentCharges?: Record<string, string>;
 }
 
 export interface UseChargesReturn {
   charges: Charges;
   errors: ChargesErrors;
   setCharge: (field: keyof Charges, value: string | number) => void;
+  setCardField: (
+    cardName: 'handlingCharges' | 'rovCharges' | 'codCharges' | 'toPayCharges' | 'appointmentCharges',
+    field: keyof ChargeCardData,
+    value: any
+  ) => void;
   validateField: (field: keyof Charges) => boolean;
+  validateCardField: (
+    cardName: 'handlingCharges' | 'rovCharges' | 'codCharges' | 'toPayCharges' | 'appointmentCharges',
+    field: keyof ChargeCardData
+  ) => boolean;
   validateAll: () => boolean;
   reset: () => void;
   loadFromDraft: (draft: Partial<Charges>) => void;
+  firstErrorRef: React.MutableRefObject<HTMLElement | null>;
 }
 
 // =============================================================================
-// FIELD RANGES
+// FIELD RANGES (for simple numeric charges)
 // =============================================================================
 
-const CHARGE_RANGES: Record<keyof Charges, { min: number; max: number }> = {
-  docketCharges: { min: 0, max: 999999 },
-  minWeightKg: { min: 0, max: 999999 },
-  minCharges: { min: 0, max: 999999 },
-  hamaliCharges: { min: 0, max: 999999 },
-  handlingCharges: { min: 0, max: 999999 },
-  rovCharges: { min: 0, max: 999999 },
-  codCharges: { min: 0, max: 999999 },
-  toPayCharges: { min: 0, max: 999999 },
-  appointmentCharges: { min: 0, max: 999999 },
-  greenTax: { min: 0, max: 999999 },
-  miscCharges: { min: 0, max: 999999 },
+const SIMPLE_CHARGE_RANGES: Record<string, { min: number; max: number }> = {
+  docketCharges: { min: 0, max: 10000 },
+  minWeightKg: { min: 0, max: 10000 },
+  minCharges: { min: 0, max: 10000 },
+  hamaliCharges: { min: 0, max: 10000 },
+  greenTax: { min: 0, max: 10000 },
+  miscCharges: { min: 0, max: 10000 },
   fuelSurchargePct: { min: 0, max: 40 },
 };
 
@@ -62,18 +77,21 @@ const CHARGE_RANGES: Record<keyof Charges, { min: number; max: number }> = {
 // =============================================================================
 
 const defaultCharges: Charges = {
+  // Simple numeric charges
   docketCharges: 0,
   minWeightKg: 0,
   minCharges: 0,
   hamaliCharges: 0,
-  handlingCharges: 0,
-  rovCharges: 0,
-  codCharges: 0,
-  toPayCharges: 0,
-  appointmentCharges: 0,
   greenTax: 0,
   miscCharges: 0,
   fuelSurchargePct: 0,
+
+  // Card-based charges
+  handlingCharges: createDefaultChargeCard(),
+  rovCharges: createDefaultChargeCard(),
+  codCharges: createDefaultChargeCard(),
+  toPayCharges: createDefaultChargeCard(),
+  appointmentCharges: createDefaultChargeCard(),
 };
 
 // =============================================================================
@@ -81,16 +99,14 @@ const defaultCharges: Charges = {
 // =============================================================================
 
 /**
- * Hook for managing charges
- *
- * @param onUpdate - Optional callback when state changes
- * @returns Charges state and methods
+ * Hook for managing charges (mixed simple + card-based)
  */
 export const useCharges = (
   onUpdate?: (charges: Charges) => void
 ): UseChargesReturn => {
   const [charges, setCharges] = useState<Charges>(defaultCharges);
   const [errors, setErrors] = useState<ChargesErrors>({});
+  const firstErrorRef = useRef<HTMLElement | null>(null);
 
   // Throttled draft persistence
   useEffect(() => {
@@ -110,36 +126,80 @@ export const useCharges = (
   }, [charges, onUpdate]);
 
   /**
-   * Set a single charge field
+   * Set a simple numeric charge field
    */
   const setCharge = useCallback(
     (field: keyof Charges, value: string | number) => {
-      // Coerce to number
-      const numValue = toNumberOrZero(value);
+      // Only handle simple numeric fields
+      if (field in SIMPLE_CHARGE_RANGES) {
+        const numValue = toNumberOrZero(value);
 
+        setCharges((prev) => {
+          const updated = { ...prev, [field]: numValue };
+          emitDebug('CHARGE_FIELD_CHANGED', { field, value: numValue });
+          return updated;
+        });
+
+        // Clear error for this field
+        setErrors((prev) => {
+          const updated = { ...prev };
+          delete updated[field as keyof ChargesErrors];
+          return updated;
+        });
+      }
+    },
+    []
+  );
+
+  /**
+   * Set a field within a card-based charge
+   */
+  const setCardField = useCallback(
+    (
+      cardName: 'handlingCharges' | 'rovCharges' | 'codCharges' | 'toPayCharges' | 'appointmentCharges',
+      field: keyof ChargeCardData,
+      value: any
+    ) => {
       setCharges((prev) => {
-        const updated = { ...prev, [field]: numValue };
-        emitDebug('CHARGE_FIELD_CHANGED', { field, value: numValue });
+        const cardData = prev[cardName] as ChargeCardData;
+        const updated = {
+          ...prev,
+          [cardName]: {
+            ...cardData,
+            [field]: value,
+          },
+        };
+        emitDebug('CARD_FIELD_CHANGED', { cardName, field, value });
         return updated;
       });
 
-      // Clear error for this field
+      // Clear error for this specific field
       setErrors((prev) => {
-        const updated = { ...prev };
-        delete updated[field as keyof ChargesErrors];
-        return updated;
+        const cardErrors = prev[cardName] || {};
+        const updatedCardErrors = { ...cardErrors };
+        delete updatedCardErrors[field];
+
+        return {
+          ...prev,
+          [cardName]: Object.keys(updatedCardErrors).length > 0 ? updatedCardErrors : undefined,
+        };
       });
     },
     []
   );
 
   /**
-   * Validate a single charge field
+   * Validate a simple numeric charge field
    */
   const validateField = useCallback(
     (field: keyof Charges): boolean => {
-      const value = charges[field];
-      const range = CHARGE_RANGES[field];
+      // Only validate simple numeric fields
+      if (!(field in SIMPLE_CHARGE_RANGES)) {
+        return true;
+      }
+
+      const value = charges[field] as number;
+      const range = SIMPLE_CHARGE_RANGES[field];
 
       // Special validation for fuel surcharge
       if (field === 'fuelSurchargePct') {
@@ -149,7 +209,6 @@ export const useCharges = (
             ...prev,
             fuelSurchargePct: fuelError,
           }));
-          emitDebug('CHARGE_VALIDATION_ERROR', { field, error: fuelError });
           return false;
         }
       }
@@ -161,7 +220,6 @@ export const useCharges = (
           ...prev,
           [field]: error,
         }));
-        emitDebug('CHARGE_VALIDATION_ERROR', { field, error });
         return false;
       }
 
@@ -178,18 +236,62 @@ export const useCharges = (
   );
 
   /**
+   * Validate a single field within a card-based charge
+   */
+  const validateCardField = useCallback(
+    (
+      cardName: 'handlingCharges' | 'rovCharges' | 'codCharges' | 'toPayCharges' | 'appointmentCharges',
+      field: keyof ChargeCardData
+    ): boolean => {
+      const cardData = charges[cardName] as ChargeCardData;
+      let error = '';
+
+      // Validate based on field type
+      if (field === 'fixedAmount' && cardData.currency === 'INR' && cardData.mode === 'FIXED') {
+        error = validateFixedAmount(cardData.fixedAmount);
+      } else if (field === 'weightThreshold') {
+        error = validateWeightThreshold(cardData.weightThreshold);
+      }
+
+      if (error) {
+        setErrors((prev) => ({
+          ...prev,
+          [cardName]: {
+            ...(prev[cardName] || {}),
+            [field]: error,
+          },
+        }));
+        return false;
+      }
+
+      // Clear error
+      setErrors((prev) => {
+        const cardErrors = { ...(prev[cardName] || {}) };
+        delete cardErrors[field];
+        return {
+          ...prev,
+          [cardName]: Object.keys(cardErrors).length > 0 ? cardErrors : undefined,
+        };
+      });
+
+      return true;
+    },
+    [charges]
+  );
+
+  /**
    * Validate all charge fields
    */
   const validateAll = useCallback((): boolean => {
-    const fields = Object.keys(CHARGE_RANGES) as (keyof Charges)[];
     let isValid = true;
     const newErrors: ChargesErrors = {};
+    firstErrorRef.current = null;
 
-    fields.forEach((field) => {
-      const value = charges[field];
-      const range = CHARGE_RANGES[field];
+    // Validate simple numeric charges
+    Object.keys(SIMPLE_CHARGE_RANGES).forEach((field) => {
+      const value = charges[field as keyof Charges] as number;
+      const range = SIMPLE_CHARGE_RANGES[field];
 
-      // Special validation for fuel surcharge
       if (field === 'fuelSurchargePct') {
         const fuelError = validateFuel(value);
         if (fuelError) {
@@ -199,9 +301,27 @@ export const useCharges = (
         }
       }
 
-      // Check if in range
       if (!isNumberInRange(value, range.min, range.max)) {
         newErrors[field as keyof ChargesErrors] = `Must be between ${range.min} and ${range.max}`;
+        isValid = false;
+      }
+    });
+
+    // Validate card-based charges
+    const cardNames: Array<'handlingCharges' | 'rovCharges' | 'codCharges' | 'toPayCharges' | 'appointmentCharges'> = [
+      'handlingCharges',
+      'rovCharges',
+      'codCharges',
+      'toPayCharges',
+      'appointmentCharges',
+    ];
+
+    cardNames.forEach((cardName) => {
+      const cardData = charges[cardName] as ChargeCardData;
+      const cardErrors = validateChargeCard(cardData);
+
+      if (Object.keys(cardErrors).length > 0) {
+        newErrors[cardName] = cardErrors;
         isValid = false;
       }
     });
@@ -223,6 +343,7 @@ export const useCharges = (
   const reset = useCallback(() => {
     setCharges(defaultCharges);
     setErrors({});
+    firstErrorRef.current = null;
     emitDebug('CHARGES_RESET');
   }, []);
 
@@ -241,9 +362,12 @@ export const useCharges = (
     charges,
     errors,
     setCharge,
+    setCardField,
     validateField,
+    validateCardField,
     validateAll,
     reset,
     loadFromDraft,
+    firstErrorRef,
   };
 };
