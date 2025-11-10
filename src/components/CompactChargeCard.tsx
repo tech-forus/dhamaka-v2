@@ -45,16 +45,19 @@ export const CompactChargeCard: React.FC<CompactChargeCardProps> = ({
   const fixedInputRef = useRef<HTMLInputElement>(null);
   const weightInputRef = useRef<HTMLInputElement>(null);
 
+  // COD/DOD and To-Pay only support Fixed ₹ (no Variable %)
+  const supportsVariablePercent = cardName !== 'codCharges' && cardName !== 'toPayCharges';
+
   const isFixedRupee = data.currency === 'INR' && data.mode === 'FIXED';
   const isVariablePercent = data.currency === 'PERCENT' && data.mode === 'VARIABLE';
 
-  const showFixed = isFixedRupee;
-  const showVariable = isVariablePercent;
+  // For COD/DOD and To-Pay, always show Fixed input (no toggle)
+  const showFixed = supportsVariablePercent ? isFixedRupee : true;
+  const showVariable = isVariablePercent && supportsVariablePercent;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
       {/* Header */}
-      {/* Header with Unit Dropdown */}
       <div className="mb-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -70,19 +73,21 @@ export const CompactChargeCard: React.FC<CompactChargeCardProps> = ({
             )}
           </div>
 
-          {/* Unit Selector */}
-          <select
-            value={data.unit}
-            onChange={(e) => onFieldChange('unit', e.target.value as Unit)}
-            className="text-xs border border-slate-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-            aria-label={`${title} unit`}
-          >
-            {UNIT_OPTIONS.map((unit) => (
-              <option key={unit} value={unit}>
-                {unit}
-              </option>
-            ))}
-          </select>
+          {/* Unit Selector (only for Handling Charges) */}
+          {cardName === 'handlingCharges' && (
+            <select
+              value={data.unit}
+              onChange={(e) => onFieldChange('unit', e.target.value as Unit)}
+              className="text-xs border border-slate-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              aria-label={`${title} unit`}
+            >
+              {UNIT_OPTIONS.map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Fixed Rate Input (directly below Unit, only visible when Fixed ₹ selected) */}
@@ -128,41 +133,43 @@ export const CompactChargeCard: React.FC<CompactChargeCardProps> = ({
         )}
       </div>
 
-      {/* Single Toggle: Fixed ₹ / Variable % */}
-      <div className="flex gap-1 mb-4 bg-slate-100 p-1 rounded-lg">
-        <button
-          type="button"
-          onClick={() => {
-            onFieldChange('currency', 'INR' as Currency);
-            onFieldChange('mode', 'FIXED' as Mode);
-          }}
-          className={`flex-1 px-3 py-1.5 text-xs font-semibold rounded transition ${
-            isFixedRupee
-              ? 'bg-white text-slate-800 shadow-sm'
-              : 'text-slate-600 hover:text-slate-800'
-          }`}
-          aria-pressed={isFixedRupee}
-          aria-label="Fixed Rupees"
-        >
-          Fixed ₹
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            onFieldChange('currency', 'PERCENT' as Currency);
-            onFieldChange('mode', 'VARIABLE' as Mode);
-          }}
-          className={`flex-1 px-3 py-1.5 text-xs font-semibold rounded transition ${
-            isVariablePercent
-              ? 'bg-white text-slate-800 shadow-sm'
-              : 'text-slate-600 hover:text-slate-800'
-          }`}
-          aria-pressed={isVariablePercent}
-          aria-label="Variable Percentage"
-        >
-          Variable %
-        </button>
-      </div>
+      {/* Single Toggle: Fixed ₹ / Variable % (only for cards that support variable) */}
+      {supportsVariablePercent && (
+        <div className="flex gap-1 mb-4 bg-slate-100 p-1 rounded-lg">
+          <button
+            type="button"
+            onClick={() => {
+              onFieldChange('currency', 'INR' as Currency);
+              onFieldChange('mode', 'FIXED' as Mode);
+            }}
+            className={`flex-1 px-3 py-1.5 text-xs font-semibold rounded transition ${
+              isFixedRupee
+                ? 'bg-white text-slate-800 shadow-sm'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+            aria-pressed={isFixedRupee}
+            aria-label="Fixed Rupees"
+          >
+            Fixed ₹
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onFieldChange('currency', 'PERCENT' as Currency);
+              onFieldChange('mode', 'VARIABLE' as Mode);
+            }}
+            className={`flex-1 px-3 py-1.5 text-xs font-semibold rounded transition ${
+              isVariablePercent
+                ? 'bg-white text-slate-800 shadow-sm'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+            aria-pressed={isVariablePercent}
+            aria-label="Variable Percentage"
+          >
+            Variable %
+          </button>
+        </div>
+      )}
 
       {/* Variable Range Dropdown (show when Variable % selected) */}
       {showVariable && (

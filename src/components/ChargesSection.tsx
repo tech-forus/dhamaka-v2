@@ -28,6 +28,7 @@ interface SimpleChargeFieldProps {
   onChange: (value: number) => void;
   onBlur: () => void;
   error?: string;
+  min?: number;
   max?: number;
   suffix?: string;
   isDropdown?: boolean;
@@ -42,6 +43,7 @@ const SimpleChargeField: React.FC<SimpleChargeFieldProps> = ({
   onChange,
   onBlur,
   error,
+  min = 1,
   max = CHARGE_MAX,
   suffix = '₹',
   isDropdown = false,
@@ -100,7 +102,7 @@ const SimpleChargeField: React.FC<SimpleChargeFieldProps> = ({
               value={value}
               onChange={handleChange}
               onBlur={onBlur}
-              min={0}
+              min={min}
               max={max}
               maxLength={maxLength}
               step="0.01"
