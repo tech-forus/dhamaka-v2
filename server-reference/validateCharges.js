@@ -98,8 +98,11 @@ function validateSimpleCharge(value, fieldName) {
 
 /**
  * Validate a complete charge card object
+ * @param {object} cardData - The charge card data
+ * @param {string} cardName - Name of the card (e.g., 'handlingCharges')
+ * @param {boolean} validateWeight - Whether to validate weight threshold (only for handlingCharges)
  */
-function validateChargeCard(cardData, cardName) {
+function validateChargeCard(cardData, cardName, validateWeight = false) {
   const errors = {};
 
   // Validate unit
@@ -138,10 +141,17 @@ function validateChargeCard(cardData, cardName) {
     }
   }
 
-  // Validate weight threshold
-  const weightError = validateWeightThreshold(cardData.weightThreshold);
-  if (weightError) {
-    errors[`${cardName}.weightThreshold`] = weightError;
+  // Validate weight threshold (only if validateWeight is true, i.e., for handlingCharges)
+  if (validateWeight && cardData.weightThreshold !== undefined) {
+    const weightError = validateWeightThreshold(cardData.weightThreshold);
+    if (weightError) {
+      errors[`${cardName}.weightThreshold`] = weightError;
+    }
+  }
+
+  // Reject weightThreshold for non-handling cards
+  if (!validateWeight && cardData.weightThreshold !== undefined) {
+    errors[`${cardName}.weightThreshold`] = 'Weight threshold is only allowed for handling charges';
   }
 
   return errors;
@@ -200,7 +210,9 @@ function validateCharges(req, res, next) {
       return;
     }
 
-    const cardErrors = validateChargeCard(charges[cardName], cardName);
+    // Only validate weightThreshold for handlingCharges
+    const shouldValidateWeight = cardName === 'handlingCharges';
+    const cardErrors = validateChargeCard(charges[cardName], cardName, shouldValidateWeight);
     Object.assign(errors, cardErrors);
   });
 

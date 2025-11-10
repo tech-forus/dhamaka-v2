@@ -252,7 +252,10 @@ export const useCharges = (
       if (field === 'fixedAmount' && cardData.currency === 'INR' && cardData.mode === 'FIXED') {
         error = validateFixedAmount(cardData.fixedAmount);
       } else if (field === 'weightThreshold') {
-        error = validateWeightThreshold(cardData.weightThreshold);
+        // Only validate weightThreshold for handlingCharges
+        if (cardName === 'handlingCharges' && cardData.weightThreshold !== undefined) {
+          error = validateWeightThreshold(cardData.weightThreshold);
+        }
       }
 
       if (error) {
@@ -322,7 +325,9 @@ export const useCharges = (
 
     cardNames.forEach((cardName) => {
       const cardData = charges[cardName] as ChargeCardData;
-      const cardErrors = validateChargeCard(cardData);
+      // Only validate weightThreshold for handlingCharges
+      const shouldValidateWeight = cardName === 'handlingCharges';
+      const cardErrors = validateChargeCard(cardData, shouldValidateWeight);
 
       if (Object.keys(cardErrors).length > 0) {
         newErrors[cardName] = cardErrors;
