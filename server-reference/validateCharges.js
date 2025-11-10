@@ -90,8 +90,8 @@ function validateSimpleCharge(value, fieldName) {
   if (isNaN(num)) {
     return `${fieldName} must be a number`;
   }
-  if (num < 0 || num > 10000) {
-    return `${fieldName} must be between 0 and 10000`;
+  if (num < 1 || num > 10000) {
+    return 'Enter amount between 1-10,000';
   }
   return null;
 }
