@@ -224,23 +224,36 @@ export const validateAddress = (address: string): string => {
 // ZOD SCHEMA (for comprehensive validation)
 // =============================================================================
 
-// Charges schema (all numbers >= 0)
+// Charge card schema (for redesigned charges)
+const ChargeCardSchema = z.object({
+  unit: z.enum(['per kg', 'per piece', 'per box']),
+  currency: z.enum(['INR', 'PERCENT']),
+  mode: z.enum(['FIXED', 'VARIABLE']),
+  fixedAmount: z.number().min(1).max(5000).optional(),
+  variableRange: z.enum(['0%', '0.1% - 1%', '1.25% - 2.5%', '3% - 4%', '4% - 5%']).optional(),
+  weightThreshold: z.number().min(1).max(20000),
+});
+
+// Charges schema (mixed: simple numbers + card structures)
 const ChargesSchema = z.object({
+  // Simple numeric charges (unchanged)
   docketCharges: z.number().min(0, 'Docket charges must be >= 0'),
   minWeightKg: z.number().min(0, 'Min weight must be >= 0'),
   minCharges: z.number().min(0, 'Min charges must be >= 0'),
   hamaliCharges: z.number().min(0, 'Hamali charges must be >= 0'),
-  handlingCharges: z.number().min(0, 'Handling charges must be >= 0'),
-  rovCharges: z.number().min(0, 'ROV charges must be >= 0'),
-  codCharges: z.number().min(0, 'COD charges must be >= 0'),
-  toPayCharges: z.number().min(0, 'ToPay charges must be >= 0'),
-  appointmentCharges: z.number().min(0, 'Appointment charges must be >= 0'),
   greenTax: z.number().min(0, 'Green tax must be >= 0'),
   miscCharges: z.number().min(0, 'Misc charges must be >= 0'),
   fuelSurchargePct: z
     .number()
     .min(0, 'Fuel surcharge must be >= 0')
     .max(40, 'Fuel surcharge must be <= 40'),
+
+  // Card-based charges (redesigned)
+  handlingCharges: ChargeCardSchema,
+  rovCharges: ChargeCardSchema,
+  codCharges: ChargeCardSchema,
+  toPayCharges: ChargeCardSchema,
+  appointmentCharges: ChargeCardSchema,
 });
 
 // Volumetric configuration schema
@@ -319,6 +332,7 @@ export const TemporaryTransporterSchema = z.object({
 // Export types derived from schema
 export type TemporaryTransporter = z.infer<typeof TemporaryTransporterSchema>;
 export type Charges = z.infer<typeof ChargesSchema>;
+export type ChargeCardData = z.infer<typeof ChargeCardSchema>;
 export type VolumetricConfig = z.infer<typeof VolumetricConfigSchema>;
 export type Geo = z.infer<typeof GeoSchema>;
 export type ZoneRateMatrix = z.infer<typeof ZoneRateMatrixSchema>;
