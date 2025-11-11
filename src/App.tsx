@@ -25,6 +25,7 @@ import PricingPage from './pages/PricingPage';
 import AddVendor from './pages/AddVendor';
 import AddPrices from './pages/AddPrices';
 import ZonePriceMatrix from './pages/ZonePriceMatrix';
+import ZoneSelectorPage from './pages/ZoneSelectorPage';
 import ODAUpload from './pages/ODAUpload';
 import UserSelect from './pages/UserSelect';
 import BiddingPage from './pages/BiddingPage';
@@ -67,6 +68,17 @@ function App() {
                 <MainLayout>
                   <PrivateRoute>
                     <AddVendor />
+                  </PrivateRoute>
+                </MainLayout>
+              }
+            />
+
+            <Route
+              path="/add-vendor/zones"
+              element={
+                <MainLayout>
+                  <PrivateRoute>
+                    <ZoneSelectorPage />
                   </PrivateRoute>
                 </MainLayout>
               }
