@@ -3,9 +3,10 @@
  * Simplified zone rate matrix editor
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UseZoneRatesReturn } from '../hooks/useZoneRates';
 import { TableCellsIcon, PlusIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { readDraft } from '../store/draftStore';
 
 // =============================================================================
 // PROPS
@@ -49,6 +50,23 @@ export const ZoneRatesEditor: React.FC<ZoneRatesEditorProps> = ({ zoneRates }) =
   const [selectedFromZones, setSelectedFromZones] = useState<string[]>([]);
   const [selectedToZones, setSelectedToZones] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(!isEmpty);
+  const [draftSelectedZones, setDraftSelectedZones] = useState<string[]>([]);
+
+  // Check for selected zones from the zone selector page
+  useEffect(() => {
+    const draft = readDraft();
+    if (draft?.selectedZones && draft.selectedZones.length > 0) {
+      setDraftSelectedZones(draft.selectedZones);
+    }
+  }, []);
+
+  // Load zones from the zone selector
+  const handleLoadFromZoneSelector = () => {
+    if (draftSelectedZones.length > 0) {
+      setSelectedFromZones(draftSelectedZones);
+      setSelectedToZones(draftSelectedZones);
+    }
+  };
 
   // Handle initialization
   const handleInitialize = () => {
@@ -105,6 +123,45 @@ export const ZoneRatesEditor: React.FC<ZoneRatesEditorProps> = ({ zoneRates }) =
       {/* Zone Selection (if not initialized) */}
       {!isInitialized && (
         <div className="space-y-6">
+          {/* Quick Load from Zone Selector */}
+          {draftSelectedZones.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-blue-900 mb-1">
+                    Zones Selected from Zone Selector
+                  </h3>
+                  <p className="text-sm text-blue-700 mb-3">
+                    You have {draftSelectedZones.length} zones selected. Click below to use them for both FROM and TO zones.
+                  </p>
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {draftSelectedZones.slice(0, 10).map((zone) => (
+                      <span
+                        key={zone}
+                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-200 text-blue-800"
+                      >
+                        {zone}
+                      </span>
+                    ))}
+                    {draftSelectedZones.length > 10 && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-200 text-blue-800">
+                        +{draftSelectedZones.length - 10} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLoadFromZoneSelector}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg
+                             hover:bg-blue-700 transition-colors whitespace-nowrap"
+                >
+                  Use These Zones
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* FROM Zones */}
           <div>
             <h3 className="text-sm font-semibold text-slate-700 mb-3">

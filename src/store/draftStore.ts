@@ -39,6 +39,7 @@ export interface VendorDraft {
   volumetric?: Partial<VolumetricConfig>;
   charges?: Partial<Charges>;
   zoneRates?: Partial<ZoneRateMatrix>;
+  selectedZones?: string[]; // Selected zone codes for zone selector page
   lastSaved?: string; // ISO timestamp
 }
 

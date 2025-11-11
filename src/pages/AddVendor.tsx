@@ -426,6 +426,36 @@ export const AddVendor: React.FC = () => {
           {/* Charges Section - New Grid Layout */}
           <PriceConfig charges={charges} />
 
+          {/* Zone Selection Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold text-slate-900 mb-2">
+                  Zone Selection & Rate Configuration
+                </h2>
+                <p className="text-sm text-slate-600 mb-4">
+                  Select the zones you want to configure rates for, then set up the zone-to-zone pricing matrix.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/add-vendor/zones')}
+                  className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg
+                             hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                  Select Zones
+                </button>
+                {readDraft()?.selectedZones && readDraft()!.selectedZones!.length > 0 && (
+                  <p className="mt-3 text-sm text-green-600 font-medium">
+                    ✓ {readDraft()!.selectedZones!.length} zones selected
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Zone Rates Editor */}
           <ZoneRatesEditor zoneRates={zoneRates} />
 
