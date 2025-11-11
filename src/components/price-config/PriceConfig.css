@@ -1,0 +1,371 @@
+/**
+ * PriceConfig Styles - Exact Visual Tokens
+ * Pixel-perfect match for 4-column top grid + card grid layout
+ */
+
+/* =============================================================================
+   TYPOGRAPHY
+   ============================================================================= */
+
+/* Using Inter font family (should be loaded globally) */
+.price-config-wrapper {
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.price-config-header {
+  margin-bottom: 24px;
+}
+
+.price-config-title {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 24px;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.price-config-icon {
+  width: 20px;
+  height: 20px;
+  color: #0f62fe;
+}
+
+/* =============================================================================
+   TOP GRID - BASIC CHARGES (4-column)
+   ============================================================================= */
+
+.basic-charges-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.basic-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.basic-field-label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.basic-input-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.basic-input,
+.basic-select {
+  width: 100%;
+  height: 40px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  color: #0f172a;
+  background-color: #fafbfc;
+  border: 1px solid #e6e9ee;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.basic-input:focus,
+.basic-select:focus {
+  border-color: #0f62fe;
+  box-shadow: 0 0 0 3px rgba(15, 98, 254, 0.1);
+}
+
+.basic-input::placeholder {
+  color: #6b7280;
+}
+
+.basic-input:hover,
+.basic-select:hover {
+  border-color: #d1d5db;
+}
+
+.input-suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.input-error {
+  border-color: #ef4444 !important;
+}
+
+.input-error:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.field-error {
+  font-size: 12px;
+  line-height: 16px;
+  color: #ef4444;
+  margin: 4px 0 0 0;
+}
+
+/* =============================================================================
+   BOTTOM GRID - ADVANCED CHARGES (Card Grid)
+   ============================================================================= */
+
+.advanced-charges-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.charge-card {
+  background-color: #ffffff;
+  border: 1px solid #e6e9ee;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 0 rgba(16, 24, 40, 0.02);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 18px;
+  color: #0f172a;
+  margin: 0;
+}
+
+.tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-icon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+  cursor: help;
+}
+
+.tooltip-content {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: 240px;
+  padding: 8px 12px;
+  background-color: #0f172a;
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 10;
+  pointer-events: none;
+  white-space: normal;
+}
+
+.tooltip-wrapper:hover .tooltip-content {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Toggle Pills */
+.toggle-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #f1f5f9;
+  padding: 4px;
+  border-radius: 999px;
+}
+
+.toggle-button {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #6b7280;
+  background-color: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.toggle-button:hover {
+  color: #0f172a;
+}
+
+.toggle-button.active {
+  background-color: #0f62fe;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.toggle-button:focus-visible {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+
+/* Card Body */
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-field-label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.card-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.card-input,
+.card-select {
+  width: 100%;
+  height: 40px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  color: #0f172a;
+  background-color: #fafbfc;
+  border: 1px solid #e6e9ee;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-input:focus,
+.card-select:focus {
+  border-color: #0f62fe;
+  box-shadow: 0 0 0 3px rgba(15, 98, 254, 0.1);
+}
+
+.card-input::placeholder {
+  color: #6b7280;
+}
+
+.card-input:hover,
+.card-select:hover {
+  border-color: #d1d5db;
+}
+
+/* =============================================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================================= */
+
+/* Tablet: 1100px breakpoint */
+@media (max-width: 1100px) {
+  .basic-charges-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .advanced-charges-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile: 600px breakpoint */
+@media (max-width: 600px) {
+  .basic-charges-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .advanced-charges-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .toggle-wrapper {
+    width: 100%;
+  }
+
+  .toggle-button {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* =============================================================================
+   ACCESSIBILITY
+   ============================================================================= */
+
+.basic-input:focus-visible,
+.basic-select:focus-visible,
+.card-input:focus-visible,
+.card-select:focus-visible {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+
+/* Remove number input spinners for cleaner look */
+.basic-input::-webkit-outer-spin-button,
+.basic-input::-webkit-inner-spin-button,
+.card-input::-webkit-outer-spin-button,
+.card-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.basic-input[type='number'],
+.card-input[type='number'] {
+  -moz-appearance: textfield;
+}

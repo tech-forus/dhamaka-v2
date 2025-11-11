@@ -247,6 +247,7 @@ const ChargesSchema = z.object({
     .number()
     .min(0, 'Fuel surcharge must be >= 0')
     .max(40, 'Fuel surcharge must be <= 40'),
+  daccCharges: z.number().min(0, 'DACC charges must be >= 0').optional(),
 
   // Card-based charges (redesigned)
   handlingCharges: ChargeCardSchema,
