@@ -1424,7 +1424,14 @@ const ZonePriceMatrix: React.FC = () => {
       timestamp: new Date().toISOString(),
     };
     localStorage.setItem("zonePriceMatrixData", JSON.stringify(matrixData));
-    alert("Price matrix saved successfully!");
+    alert("⚠️ Matrix saved to browser storage only!\n\n" +
+          "This data is stored locally in your browser and is NOT saved to the database.\n\n" +
+          "To persist this configuration:\n" +
+          "1. Export as CSV (recommended)\n" +
+          "2. Use the data in Add Vendor page\n" +
+          "3. Submit a vendor to save to database\n\n" +
+          "Note: Clearing browser data will delete this configuration."
+    );
   };
 
   const exportPriceMatrix = () => {
@@ -2160,6 +2167,33 @@ const ZonePriceMatrix: React.FC = () => {
               <p className="mt-2 text-slate-600">
                 Set pricing between all your configured zones. Enter prices in your preferred currency.
               </p>
+            </div>
+
+            {/* ⚠️ LOCAL STORAGE WARNING */}
+            <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+              <div className="flex items-start">
+                <Info className="h-5 w-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-yellow-800 mb-1">
+                    ⚠️ Local Storage Only - Data Not Saved to Database
+                  </h3>
+                  <p className="text-sm text-yellow-700 mb-2">
+                    This page stores data in your browser's local storage only. Your zone configurations
+                    and price matrix will <strong>NOT</strong> be saved to the database automatically.
+                  </p>
+                  <div className="text-sm text-yellow-700 space-y-1">
+                    <p><strong>To persist your data:</strong></p>
+                    <ul className="list-disc ml-5 space-y-0.5">
+                      <li>Export as CSV for backup (recommended)</li>
+                      <li>Complete vendor creation in <a href="/addvendor" className="underline hover:text-yellow-900">Add Vendor</a> page</li>
+                      <li>Submit vendor to save configuration to database</li>
+                    </ul>
+                  </div>
+                  <p className="text-xs text-yellow-600 mt-2">
+                    ⚠️ Warning: Clearing browser data will permanently delete this configuration.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Price Matrix Grid */}
