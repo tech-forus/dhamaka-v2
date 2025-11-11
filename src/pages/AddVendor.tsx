@@ -20,7 +20,7 @@ import { useZoneRates } from '../hooks/useZoneRates';
 // Components
 import { CompanySection } from '../components/CompanySection';
 import { TransportSection } from '../components/TransportSection';
-import { ChargesSection } from '../components/ChargesSection';
+import { PriceConfig } from '../components/price-config';
 import { ZoneRatesEditor } from '../components/ZoneRatesEditor';
 import { PriceChartUpload } from '../components/PriceChartUpload';
 import { SavedVendorsTable } from '../components/SavedVendorsTable';
@@ -423,8 +423,8 @@ export const AddVendor: React.FC = () => {
             onTransportModeChange={setTransportMode}
           />
 
-          {/* Charges Section */}
-          <ChargesSection charges={charges} />
+          {/* Charges Section - New Grid Layout */}
+          <PriceConfig charges={charges} />
 
           {/* Zone Rates Editor */}
           <ZoneRatesEditor zoneRates={zoneRates} />
