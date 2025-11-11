@@ -29,6 +29,7 @@ export interface ChargesErrors {
   greenTax?: string;
   miscCharges?: string;
   fuelSurchargePct?: string;
+  daccCharges?: string;
 
   // Card-based charges (nested errors)
   handlingCharges?: Record<string, string>;
@@ -70,6 +71,7 @@ const SIMPLE_CHARGE_RANGES: Record<string, { min: number; max: number }> = {
   greenTax: { min: 1, max: 10000 },
   miscCharges: { min: 1, max: 10000 },
   fuelSurchargePct: { min: 0, max: 40 },
+  daccCharges: { min: 1, max: 10000 },
 };
 
 // =============================================================================
@@ -85,6 +87,7 @@ const defaultCharges: Charges = {
   greenTax: 0,
   miscCharges: 0,
   fuelSurchargePct: 0,
+  daccCharges: 0,
 
   // Card-based charges
   handlingCharges: createDefaultChargeCard(),
